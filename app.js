@@ -22,8 +22,15 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
+let currentSocket = null;
+
 io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
+
+    if (currentSocket) {
+      currentSocket.disconnect();
+    }
+    currentSocket = socket;
 
     // Receive location from tracking device
     socket.on("send-location", (data) => {
