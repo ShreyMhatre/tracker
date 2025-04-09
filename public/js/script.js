@@ -11,10 +11,25 @@ L.tileLayer("https://maps.geoapify.com/v1/tile/osm-liberty/{z}/{x}/{y}.png?apiKe
 const markers = {};
 let fromWaypoint = null;
 let toWaypoint = null;
+const icons = {
+    toWaypoint: L.icon({
+      iconUrl: 'public/icons/sofa.png',
+      iconSize: [32, 32],
+      iconAnchor: [32, 32],
+      popupAnchor: [0, -32]
+    }),
+    fromWaypoint: L.icon({
+      iconUrl: 'public/icons/scooter.png',
+      iconSize: [32, 32],
+      iconAnchor: [32, 32],
+      popupAnchor: [0, -32]
+    })
+  };
 
 window.addEventListener('testToWaypointReady', (event) => {
     toWaypoint = event.detail;
-    const toWaypointMarker = L.marker(toWaypoint).addTo(map).bindPopup("Destination").openPopup();
+    const toWaypointMarker = L.marker(toWaypoint, {icon: icons.toWaypoint}).addTo(map).bindPopup("Destination").openPopup();
+    map.setView(toWaypoint, 15);
 });
 
 // Send location if supported
@@ -29,6 +44,8 @@ if (navigator.geolocation) {
     );
 }
 
+let routeLayer = null;
+
 // Receive updates from server
 socket.on("receive-location", (data) => {
     const { id, latitude, longitude } = data;
@@ -36,10 +53,9 @@ socket.on("receive-location", (data) => {
     if (markers[id]) {
         markers[id].setLatLng([latitude, longitude]);
     } else {
-        markers[id] = L.marker([latitude, longitude]).addTo(map);
+        markers[id] = L.marker([latitude, longitude], {icon: icons.fromWaypoint}).addTo(map);
     }
 
-    map.setView([latitude, longitude]);
     fromWaypoint = [latitude, longitude];
 
     if (toWaypoint) { // Ensure toWaypoint is not null before making the fetch call
@@ -48,7 +64,7 @@ socket.on("receive-location", (data) => {
         fetch(url).then(res => res.json()).then(result => {
             console.log(result);
 
-            L.geoJSON(result, {
+            routeLayer = L.geoJSON(result, {
                 style: (feature) => {
                     return {
                         color: "rgba(20, 137, 255, 0.7)",
@@ -61,7 +77,10 @@ socket.on("receive-location", (data) => {
 
         }, error => console.log(error));
     }
+
+    
 });
+
 
 // Handle user disconnects
 socket.on("user-disconnected", (id) => {

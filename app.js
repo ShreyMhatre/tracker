@@ -27,10 +27,11 @@ let currentSocket = null;
 io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    if (currentSocket) {
-      currentSocket.disconnect();
+    const isLocalhost = socket.handshake.headers.referer?.includes('localhost');
+    if (isLocalhost) {
+        console.log("Connection from localhost ignored.");
+        return; // Stop further processing for localhost
     }
-    currentSocket = socket;
 
     // Receive location from tracking device
     socket.on("send-location", (data) => {
@@ -43,6 +44,8 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Delivery: npx ngrok http ${PORT}`);
 });
