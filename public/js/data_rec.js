@@ -7,9 +7,9 @@ function encodeAddress(addressObj) {
 }
   
 const address = {
-    housenumber: "13/804",
-    street: "Regency Anantam",
-    city: "Dombivli",
+    housenumber: "Kohitoor plaza",
+    street: "Jama Masjid road",
+    city: "nerul",
     state: "Maharashtra",
     postcode: "421204",
     country: "India"
